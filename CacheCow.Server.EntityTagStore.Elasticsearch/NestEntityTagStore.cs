@@ -70,7 +70,7 @@ namespace CacheCow.Server.EntityTagStore.Elasticsearch
                 // Create new
                 cacheKey = new PersistentCacheKey
                 {
-                    Hash64 = key.HashBase64,
+                    Id = key.HashBase64,
                     RoutePattern = key.RoutePattern,
                     ETag = eTag.Tag,
                     LastModified = eTag.LastModified,
@@ -87,7 +87,20 @@ namespace CacheCow.Server.EntityTagStore.Elasticsearch
 
         public bool TryRemove(CacheKey key)
         {
-            throw new NotImplementedException();
+            var idsList = new List<string> { key.HashBase64 };
+            var result = _elasticsearchClient.Search<PersistentCacheKey>(s => s
+                .Index(ElasticsearchIndex)
+                .AllTypes()
+                .Query(p => p.Ids(idsList)));
+
+            int count = result.Documents.Count();
+
+            foreach (var item in result.Documents)
+            {
+                _elasticsearchClient.DeleteById(ElasticsearchIndex, ElasticsearchIndex, item.Id);
+            }
+
+            return count > 0;
         }
 
         public int RemoveAllByRoutePattern(string routePattern)

@@ -6,7 +6,7 @@ namespace CacheCow.Server.EntityTagStore.Elasticsearch
 	{
         public const string SearchIndex = "cachecow";
 
-		public string Hash64 { get; set; }
+		public string Id { get; set; }
 
         public string RoutePattern { get; set; }
         

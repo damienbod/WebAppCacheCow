@@ -227,7 +227,12 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Scripts\jquery-2.1.0.min.map" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\CacheCow.Server.EntityTagStore.Elasticsearch\CacheCow.Server.EntityTagStore.Elasticsearch.csproj">
+      <Project>{2ab731d9-7fe2-4e37-9846-73546aac933f}</Project>
+      <Name>CacheCow.Server.EntityTagStore.Elasticsearch</Name>
+    </ProjectReference>
+  </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
     <None Include="Project_Readme.html" />

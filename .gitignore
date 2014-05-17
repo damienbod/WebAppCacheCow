@@ -1,3 +1,5 @@
 WebAppCacheCow/bin
 WebAppCacheCow/obj
 CacheCow.Server.EntityTagStore.Elasticsearch/obj
+CacheCow.Server.EntityTagStore.Elasticsearch/bin
+WebAppCacheCow/WebAppCacheCow.csproj.user

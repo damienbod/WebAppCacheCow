@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
+using CacheCow.Common;
 using CacheCow.Server;
 using WebAppCacheCow.Controllers;
 
@@ -23,9 +24,18 @@ namespace WebAppCacheCow
                 defaults: new { id = RouteParameter.Optional }
             );
 
-            var cacheCowCacheHandler = new CachingHandler(config);
+            // In memory
+            //var cacheCowCacheHandler = new CachingHandler(config);
+            //config.MessageHandlers.Add(cacheCowCacheHandler);
+
+            //Configure HTTP Caching using Elasticsearch
+            IEntityTagStore eTagStore = new CacheCow.Server.EntityTagStore.Elasticsearch.NestEntityTagStore();
+            var cacheCowCacheHandler = new CachingHandler(config, eTagStore)
+            {
+                AddLastModifiedHeader = false
+            };
             config.MessageHandlers.Add(cacheCowCacheHandler);
-            config.Services.Replace(typeof(IExceptionHandler), new GlobalExceptionHandler());
+
         }
     }
 }
