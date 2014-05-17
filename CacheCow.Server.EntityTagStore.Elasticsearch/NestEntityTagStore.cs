@@ -1,0 +1,103 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using CacheCow.Common;
+using Nest;
+
+namespace CacheCow.Server.EntityTagStore.Elasticsearch
+{
+    public class NestEntityTagStore : IEntityTagStore
+	{
+		private readonly ElasticClient _elasticsearchClient;
+        private const string ElasticsearchIndex = "cachecow";
+
+        public NestEntityTagStore()
+        {
+            var uri = new Uri("http://localhost:9200");
+            var settings = new ConnectionSettings(uri).SetDefaultIndex(ElasticsearchIndex);
+            _elasticsearchClient = new ElasticClient(settings);
+        }
+
+        public void Dispose()
+        {
+           
+        }
+
+        private PersistentCacheKey TryGetPersistentCacheKey(string key)
+        {
+            var idsList = new List<string> { key };
+            var result = _elasticsearchClient.Search<PersistentCacheKey>(s => s
+                .Index(ElasticsearchIndex)
+                .AllTypes()
+                .Query(p => p.Ids(idsList)));
+
+            if (result.Documents.Any())
+            {
+                return result.Documents.First();
+            }
+
+            return null;
+        }
+
+        public bool TryGetValue(CacheKey key, out TimedEntityTagHeaderValue eTag)
+        {
+            eTag = null;
+            var persistentCacheKey = TryGetPersistentCacheKey(key.HashBase64);
+            if (persistentCacheKey != null)
+            {
+                eTag = new TimedEntityTagHeaderValue(persistentCacheKey.ETag)
+                {
+                    LastModified = persistentCacheKey.LastModified
+                };
+
+                return true; 
+            }
+                
+            return false;
+        }
+
+        public void AddOrUpdate(CacheKey key, TimedEntityTagHeaderValue eTag)
+        {
+            var cacheKey = TryGetPersistentCacheKey(key.HashBase64);
+            if (cacheKey != null)
+            {
+                // update existing
+                cacheKey.ETag = eTag.Tag;
+                cacheKey.LastModified = eTag.LastModified;
+            }
+            else
+            {
+                // Create new
+                cacheKey = new PersistentCacheKey
+                {
+                    Hash64 = key.HashBase64,
+                    RoutePattern = key.RoutePattern,
+                    ETag = eTag.Tag,
+                    LastModified = eTag.LastModified,
+                    ResourceUri = key.ResourceUri
+                };
+            }
+            _elasticsearchClient.Index(cacheKey, PersistentCacheKey.SearchIndex, ElasticsearchIndex);
+        }
+
+        public int RemoveResource(string resourceUri)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryRemove(CacheKey key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int RemoveAllByRoutePattern(string routePattern)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Clear()
+        {
+            _elasticsearchClient.DeleteIndex(ElasticsearchIndex);
+        }
+	}
+}
