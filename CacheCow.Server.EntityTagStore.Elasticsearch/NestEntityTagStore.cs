@@ -82,7 +82,25 @@ namespace CacheCow.Server.EntityTagStore.Elasticsearch
 
         public int RemoveResource(string resourceUri)
         {
-            throw new NotImplementedException();
+            var items = resourceUri.Trim('/').Split('/');
+
+            var result = _elasticsearchClient.Search<PersistentCacheKey>(s => s.Index(ElasticsearchIndex)
+                .AllTypes()
+                .Query(q => q.TermsDescriptor(tq => tq
+                    .OnField(f => f.ResourceUri)
+                    .Terms(items)
+                    .MinimumMatch(items.Length)
+                    )
+                ));
+
+            int count = result.Documents.Count();
+
+            foreach (var item in result.Documents)
+            {
+                _elasticsearchClient.DeleteById(ElasticsearchIndex, ElasticsearchIndex, item.Id);
+            }
+
+            return count;
         }
 
         public bool TryRemove(CacheKey key)
@@ -105,7 +123,25 @@ namespace CacheCow.Server.EntityTagStore.Elasticsearch
 
         public int RemoveAllByRoutePattern(string routePattern)
         {
-            throw new NotImplementedException();
+            var items = routePattern.Trim('+').Trim('/').Split('/');
+
+            var result = _elasticsearchClient.Search<PersistentCacheKey>(s => s.Index(ElasticsearchIndex)
+                .AllTypes()
+                .Query(q => q.TermsDescriptor(tq => tq
+                    .OnField(f => f.ResourceUri)
+                    .Terms(items)
+                    .MinimumMatch(items.Length)
+                    )
+                ));
+
+            int count = result.Documents.Count();
+
+            foreach (var item in result.Documents)
+            {
+                _elasticsearchClient.DeleteById(ElasticsearchIndex, ElasticsearchIndex, item.Id);
+            }
+
+            return count;
         }
 
         public void Clear()
