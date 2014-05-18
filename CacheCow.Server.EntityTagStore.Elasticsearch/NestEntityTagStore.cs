@@ -11,16 +11,11 @@ namespace CacheCow.Server.EntityTagStore.Elasticsearch
 		private readonly ElasticClient _elasticsearchClient;
         private const string ElasticsearchIndex = "cachecow";
 
-        public NestEntityTagStore()
+        public NestEntityTagStore(string elasticsearchUrl)
         {
-            var uri = new Uri("http://localhost:9200");
+            var uri = new Uri(elasticsearchUrl);
             var settings = new ConnectionSettings(uri).SetDefaultIndex(ElasticsearchIndex);
             _elasticsearchClient = new ElasticClient(settings);
-        }
-
-        public void Dispose()
-        {
-           
         }
 
         private PersistentCacheKey TryGetPersistentCacheKey(string key)
@@ -147,6 +142,11 @@ namespace CacheCow.Server.EntityTagStore.Elasticsearch
         public void Clear()
         {
             _elasticsearchClient.DeleteIndex(ElasticsearchIndex);
+        }
+
+        public void Dispose()
+        {
+
         }
 	}
 }

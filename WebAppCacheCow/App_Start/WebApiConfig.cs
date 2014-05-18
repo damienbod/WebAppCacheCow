@@ -29,7 +29,7 @@ namespace WebAppCacheCow
             //config.MessageHandlers.Add(cacheCowCacheHandler);
 
             //Configure HTTP Caching using Elasticsearch
-            IEntityTagStore eTagStore = new CacheCow.Server.EntityTagStore.Elasticsearch.NestEntityTagStore();
+            IEntityTagStore eTagStore = new CacheCow.Server.EntityTagStore.Elasticsearch.NestEntityTagStore("http://localhost:9200");
             var cacheCowCacheHandler = new CachingHandler(config, eTagStore)
             {
                 AddLastModifiedHeader = false

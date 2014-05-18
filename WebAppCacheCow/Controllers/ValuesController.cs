@@ -24,6 +24,13 @@ namespace WebAppCacheCow.Controllers
             return "value";
         }
 
+        [Route("api/crazyPath/hello/{id}")]
+        public string GetSpecial(int id)
+        {
+            return "value";
+        }
+
+
         // POST api/values
         public void Post([FromBody]string value)
         {
